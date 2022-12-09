@@ -15,7 +15,7 @@ public class StuckWin {
   enum ModeMvt {
     REAL, SIMU
   }
- 
+
   final char[] joueurs = { 'B', 'R' };
   final int SIZE = 8;
   final char VIDE = '.';
@@ -65,26 +65,45 @@ public class StuckWin {
    * Affiche le plateau de jeu dans la configuration portée par
    * l'attribut d'état "state"
    */
-  void affiche() {
-    for (int i = state.length - 1; i > 0; i--) {
-      String temp = "";
-      for (int j = 0, x = i; x <= state.length - 1; j++, x++) {
-         temp = temp+" "+state[x][j];
+  public static void permuteTab(char[][] tab, int nb) {
+    char tmp;
+
+    for (int i = 0; i < tab.length; i++) {
+      for (int j = 0; j < tab[i].length / 2; j++) {
+        tmp = tab[i][j];
+        tab[i][j] = tab[i][nb - 1 - j];
+        tab[i][nb - 1 - j] = tmp;
       }
-      System.out.println(temp);
+    }
   }
 
-  for (int i = 0; i <= state.length - 1; i++) {
-    int k=0;
-       String temp = "";
-       for (int j = 0, y = i; y <= state.length - 1; j++, y++) {
-       temp = temp+" "+state[j][y];
-       }while(k!=state.length){
-        System.out.print(" ");
-        k++;
-       }System.out.println(temp);
+  void affiche() {
+
+    for (int k = state.length; k >= 0; k--) {
+      permuteTab(state, state[k].length);
+      for (int j = 0; j <= k; j++) {
+        int i = k - j;
+        System.out.print(state[state.length - j - 1][state.length - i - 1] + " ");
+      }
+      System.out.println();
+    }
+
+    for (int k = state.length - 2; k >= 0; k--) {
+      for (int j = 0; j <= k; j++) {
+        int i = k - j;
+        System.out.print(state[state.length - j - 1][state.length - i - 1] + " ");
+      }
+      System.out.println();
+    }
+    System.out.println();
+
+    for (int i = 0; i < state.length; i++) {
+      for (int j = 0; j < state[i].length; j++) {
+        System.out.print(state[i][j] + " ");
+      }
+      System.out.println();
+    }
   }
-}
 
   // votre code ici
 
