@@ -7,6 +7,7 @@ import java.util.Scanner;
 public class StuckWin {
   static final Scanner input = new Scanner(System.in);
   private static final double BOARD_SIZE = 7;
+  static final char[] lettres = {'A', 'B', 'C', 'D', 'E', 'F', 'G'};// on initialise toute les lettres possibles pour le jeu 
 
   enum Result {
     OK, BAD_COLOR, DEST_NOT_FREE, EMPTY_SRC, TOO_FAR, EXT_BOARD, EXIT
@@ -29,6 +30,7 @@ public class StuckWin {
       { '-', 'B', 'B', 'B', 'B', '.', '-', '-' },
       { '-', 'B', 'B', 'B', 'B', '-', '-', '-' },
   };
+  char[][] stateInvers = ReversiState(state.clone());
 
   /**
    * Déplace un pion ou simule son déplacement
@@ -42,9 +44,29 @@ public class StuckWin {
    *         EXIT} selon le déplacement
    */
   Result deplace(char couleur, String lcSource, String lcDest, ModeMvt mode) {
-    // votre code ici. Supprimer la ligne ci-dessous.
-    throw new java.lang.UnsupportedOperationException("à compléter");
+
+    if(state[getIdLettre(lcSource.charAt(0))][Integer.parseInt(lcDest.replaceAll("[^0-7]", ""))] == '-' ){
+      return Result.EXT_BOARD;
+    }
+    return Result.OK;
+
   }
+  
+
+  int getIdLettre(char lettre) {
+    int result = -1;
+    for(int i = 0; i < lettres.length; i++) {
+      if(lettres[i] == lettre) {
+        result = i;
+        break;
+      }
+    }
+    return result;
+
+    
+  }
+
+  
 
   /**
    * Construit les trois chaînes représentant les positions accessibles
@@ -56,54 +78,95 @@ public class StuckWin {
    * @return tableau des trois positions jouables par le pion (redondance possible
    *         sur les bords)
    */
-  String[] possibleDests(char couleur, int idLettre, int idCol) {
-    // votre code ici. Supprimer la ligne ci-dessous.
-    throw new java.lang.UnsupportedOperationException("à compléter");
-  }
+  String[] possibleDests(char couleur, int idLettre, int idCol){
+    String[] destinations = new String[3];
+    int index = 0;
+    
+    switch (couleur) {
+      case 'B':
+        for(int i = idLettre-1; i < idLettre + 1; i++) {
+          for(int j = idCol; j < idCol + 2; j++) {
+            if(idLettre >= 0 && idLettre < BOARD_SIZE && idCol >= 0 && idCol < SIZE) { /*Tester si idLettre et idCol sont dans le tableau pour les Bleus*/
+              destinations[index] = "" + lettres[idLettre] + idCol;
+            }
+            if(!(i == idLettre && j == idCol)){
+              index++;
+            }
+          }
+        }
+        break;
+      case 'R':
+      for(int i = idLettre; i < idLettre + 2; i++) {
+        for(int j = idCol - 1; j < idCol + 1; j++) {
+          if(idLettre >= 0 && idLettre < BOARD_SIZE && idCol >= 0 && idCol < SIZE) {/*Tester si idLettre et idCol sont dans le tableau pour les Rouges */
+            destinations[index] = "" + lettres[idLettre] + idCol;
+          }
+          if(!(i == idLettre && j == idCol)){
+            index++;
+          }
+        }
+      }
+        break;
+      default:
+        break;
+    }
 
+    return destinations;
+  }
+/**
+ * on clone le tableau pour garder l'initial
+ * @param stateClone
+ * @return le tableau inverser
+ */
+ 
+  char[][] ReversiState(char[][] stateClone) {
+    char temp;
+
+    for(int i = 0; i < stateClone.length; i++) {
+        for(int j = 0; j < stateClone[i].length/2; j++) {
+            temp = stateClone[i][j];
+            stateClone[i][j] = stateClone[i][stateClone[i].length - j - 1];
+            stateClone[i][stateClone[i].length - j - 1] = temp;
+        }
+    }
+
+    return state;
+ }
   /**
-   * Affiche le plateau de jeu dans la configuration portée par
-   * l'attribut d'état "state"
+   * Affiche le plateau de jeu dans le terminal avec l'attribut d'état "stateInvers"
+   * on rajoute les coulrus pour différencier les équipes
+   * on apppel la fonction Lettres pour avoir les cases correpondant
    */
-  public static void permuteTab(char[][] tab, int nb) {
-    char tmp;
 
-    for (int i = 0; i < tab.length; i++) {
-      for (int j = 0; j < tab[i].length / 2; j++) {
-        tmp = tab[i][j];
-        tab[i][j] = tab[i][nb - 1 - j];
-        tab[i][nb - 1 - j] = tmp;
-      }
+ void affiche() {
+    int spaceCount = 4;
+    String line = "";
+
+    for( int k = 0 ; k <= stateInvers.length + stateInvers[0].length - 2; k++ ) {
+        for( int j = 0 ; j <= k ; j++ ) {
+            int i = k - j;
+            if( i < stateInvers.length && j < stateInvers[0].length ) {
+                if(stateInvers[i][j] != '-' ) {
+                    if(stateInvers[i][j] == 'B') {
+                      line = line + ConsoleColors.BLUE_BACKGROUND;
+                    }else if(stateInvers[i][j] == 'R') {
+                      line = line + ConsoleColors.RED_BACKGROUND;
+                    }else {
+                      line = line + ConsoleColors.WHITE_BACKGROUND;
+                    }
+                    line = line + lettres[j] + (7 - i)  + ConsoleColors.RESET + "  ";
+                    spaceCount--;
+                }
+            }
+        }
+        for (int i = 0; i < spaceCount; i++) {
+            System.out.print("  ");
+        }
+        System.out.println(line);
+        line = "";
+        spaceCount = 4;
     }
-  }
-
-  void affiche() {
-
-    for (int k = state.length; k >= 0; k--) {
-      permuteTab(state, state[k].length);
-      for (int j = 0; j <= k; j++) {
-        int i = k - j;
-        System.out.print(state[state.length - j - 1][state.length - i - 1] + " ");
-      }
-      System.out.println();
-    }
-
-    for (int k = state.length - 2; k >= 0; k--) {
-      for (int j = 0; j <= k; j++) {
-        int i = k - j;
-        System.out.print(state[state.length - j - 1][state.length - i - 1] + " ");
-      }
-      System.out.println();
-    }
-    System.out.println();
-
-    for (int i = 0; i < state.length; i++) {
-      for (int j = 0; j < state[i].length; j++) {
-        System.out.print(state[i][j] + " ");
-      }
-      System.out.println();
-    }
-  }
+ }  
 
   // votre code ici
 
@@ -138,9 +201,9 @@ public class StuckWin {
         break;
       case 'R':
         System.out.println("Mouvement " + couleur);
-        mvtIa = jouerIA(couleur);
-        src = mvtIa[0];
-        dst = mvtIa[1];
+        //mvtIa = jouerIA(couleur);
+        src = input.next();
+        dst = input.next();
         System.out.println(src + "->" + dst);
         break;
     }
@@ -148,22 +211,38 @@ public class StuckWin {
   }
 
   /**
-   * retourne 'R' ou 'B' si vainqueur, 'N' si partie pas finie
-   * 
-   * @param couleur
-   * @return
+   * retourne la couleur gagnante et si la partie se finit par un égalité, on renvoie 'N'
+   * @param couleur définit la couleur du joueur conscernée
+   * @return retourne la couleur gagnante
    */
-  char finPartie(char couleur) {
-    // votre code ici. Supprimer la ligne ci-dessous.
-    throw new java.lang.UnsupportedOperationException("à compléter");
+  char finPartie(char couleur){
+    for (int i = 0; i < state.length; i++) {
+      for (int j = 0; j < state[i].length; j++) {
+        if (state[i][j] == couleur) {
+          String[] destinations = possibleDests(couleur, i, j);
+          for (int k = 0; k < destinations.length; k++) {
+            if(destinations[k] != "") {
+              couleur = 'N';
+            }
+          }
+        }
+      }
+    }
+
+    return couleur;
   }
 
+  /**
+   * 
+   * @param args
+   */
   public static void main(String[] args) {
     StuckWin jeu = new StuckWin();
     String src = "";
     String dest;
     String[] reponse;
     Result status;
+
     char partie = 'N';
     char curCouleur = jeu.joueurs[0];
     char nextCouleur = jeu.joueurs[1];
